@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Quiz Funnel Scorecard — Pitchpath</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0F172A;
+    --slate: #1E293B;
+    --slate-light: #334155;
+    --orange: #F97316;
+    --orange-dark: #EA580C;
+    --green: #22C55E;
+    --text: #F8FAFC;
+    --muted: #94A3B8;
+    --border: rgba(148, 163, 184, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    min-height: 100vh;
+  }
+
+  /* Header / Logo */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+  .logo span { color: var(--orange); }
+  .header-tag {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-bottom: 36px;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--slate);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--orange);
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Screens */
+  .screen { display: none; animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+  .screen.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Intro / Welcome */
+  .intro h1 {
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .intro h1 .accent { color: var(--orange); }
+  .intro .lede {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    max-width: 580px;
+  }
+  .intro-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .intro-stat {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+  .intro-stat .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--orange);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .intro-stat .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Question */
+  .q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--orange);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .q-title {
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 28px;
+  }
+  .q-help {
+    font-size: 15px;
+    color: var(--muted);
+    margin-top: -16px;
+    margin-bottom: 28px;
+  }
+
+  /* Options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .option {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    line-height: 1.4;
+    font-family: inherit;
+    width: 100%;
+  }
+  .option:hover {
+    border-color: var(--orange);
+    background: var(--slate-light);
+    transform: translateY(-1px);
+  }
+  .option.selected {
+    border-color: var(--orange);
+    background: rgba(249, 115, 22, 0.08);
+  }
+  .option-key {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+  .option:hover .option-key,
+  .option.selected .option-key {
+    background: var(--orange);
+    color: var(--text);
+    border-color: var(--orange);
+  }
+
+  /* Slider */
+  .slider-wrap {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 28px;
+  }
+  .slider-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--orange);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .slider-label {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--navy);
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--orange);
+    cursor: pointer;
+    border: 3px solid var(--navy);
+    box-shadow: 0 0 0 1px var(--orange);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--orange);
+    cursor: pointer;
+    border: 3px solid var(--navy);
+    box-shadow: 0 0 0 1px var(--orange);
+  }
+  .slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Buttons */
+  .btn {
+    background: var(--orange);
+    color: var(--text);
+    border: none;
+    padding: 18px 28px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn:hover { background: var(--orange-dark); transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: var(--slate-light); }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover {
+    background: var(--slate);
+    border-color: var(--muted);
+  }
+  .btn-row {
+    display: flex;
+    gap: 12px;
+  }
+  .btn-row .btn { flex: 1; }
+  .btn-back {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 10px 0;
+    margin-top: 8px;
+    font-family: inherit;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-back:hover { color: var(--text); }
+  .btn-back:disabled { opacity: 0; pointer-events: none; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 28px;
+    max-width: 460px;
+    width: 100%;
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .modal-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--orange);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .modal h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 10px;
+    line-height: 1.15;
+  }
+  .modal p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--orange);
+  }
+  .field.error input { border-color: #ef4444; }
+  .field-error {
+    font-size: 12px;
+    color: #ef4444;
+    margin-top: 4px;
+    display: none;
+  }
+  .field.error .field-error { display: block; }
+  .modal .btn { margin-top: 12px; }
+  .modal-tiny {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  /* Results */
+  .result-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--orange);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .result h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 24px;
+  }
+  .result-score-card {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .score-block .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .score-block .score-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .score-block .score-value.green { color: var(--green); }
+  .score-block .score-value.orange { color: var(--orange); }
+
+  .result-section {
+    margin-bottom: 28px;
+  }
+  .result-section h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.015em;
+  }
+  .result-section p {
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .result-section p strong { color: var(--text); }
+
+  .blueprint-box {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 28px;
+  }
+  .blueprint-box .bp-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .blueprint-box h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .blueprint-box p {
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .builds-list {
+    list-style: none;
+    margin-bottom: 28px;
+  }
+  .builds-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .builds-list li:last-child { border-bottom: none; }
+  .builds-list li::before {
+    content: "→";
+    color: var(--orange);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .cta-block {
+    background: linear-gradient(135deg, var(--slate) 0%, rgba(249, 115, 22, 0.08) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .cta-block h3 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .cta-block p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-size: 15px;
+  }
+
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 480px) {
+    .app { padding: 20px 16px 40px; }
+    .intro-stats { grid-template-columns: 1fr; }
+    .result-score-card { grid-template-columns: 1fr; }
+    .modal { padding: 28px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo">Pitch<span>path</span></div>
+    <div class="header-tag">Quiz Funnel Scorecard</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap" style="display:none;">
+    <div class="progress-meta">
+      <span id="progressText">Question 1 of 11</span>
+      <span id="progressPercent">9%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="screen intro active" id="screenIntro">
+    <h1>Is your business leaving money <span class="accent">on the table?</span></h1>
+    <p class="lede">Most businesses convert under 3% of their traffic. A quiz funnel built by conversion specialists converts at 15-30%+. This scorecard tells you exactly how much you are leaving behind — and what your quiz funnel should look like.</p>
+
+    <div class="intro-stats">
+      <div class="intro-stat"><span class="num">11</span><span class="label">Questions</span></div>
+      <div class="intro-stat"><span class="num">2 min</span><span class="label">To complete</span></div>
+      <div class="intro-stat"><span class="num">5</span><span class="label">Result profiles</span></div>
+    </div>
+
+    <button class="btn" onclick="startQuiz()">Start the Scorecard →</button>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div class="screen" id="screenQuestion">
+    <div class="q-num" id="qNum">Question 1 / 11</div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <p class="q-help" id="qHelp" style="display:none;"></p>
+    <div class="options" id="qOptions"></div>
+    <div class="slider-wrap" id="qSlider" style="display:none;">
+      <div class="slider-value" id="sliderValue">5,000</div>
+      <div class="slider-label" id="sliderLabel">Visitors per month</div>
+      <input type="range" id="sliderInput" min="0" max="6" value="3" step="1" />
+      <div class="slider-ticks">
+        <span>&lt;500</span><span>2k</span><span>10k</span><span>50k+</span>
+      </div>
+    </div>
+    <button class="btn-back" id="backBtn" onclick="goBack()">← Back</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screenResults">
+    <div class="result">
+      <div class="result-eyebrow">Your Scorecard Result</div>
+      <h1 id="resultHeadline"></h1>
+
+      <div class="result-score-card">
+        <div class="score-block">
+          <div class="score-label">Your Score</div>
+          <div class="score-value orange" id="resultScore">42 / 50</div>
+        </div>
+        <div class="score-block">
+          <div class="score-label">Profile Tier</div>
+          <div class="score-value green" id="resultTier" style="font-size:18px;">Conversion Goldmine</div>
+        </div>
+      </div>
+
+      <div class="result-section" id="resultBody"></div>
+
+      <div class="blueprint-box" id="blueprintBox">
+        <div class="bp-eyebrow">Your Quiz Funnel Blueprint</div>
+        <h4 id="blueprintTitle"></h4>
+        <p id="blueprintBody"></p>
+      </div>
+
+      <div class="result-section">
+        <h3>What Pitchpath builds for you</h3>
+        <ul class="builds-list" id="buildsList"></ul>
+      </div>
+
+      <div class="cta-block">
+        <h3 id="ctaHeadline">Ready to see what yours looks like?</h3>
+        <p id="ctaSubhead">Book a free strategy call. We will walk you through a quiz funnel we built for a business like yours and show you exactly what yours would look like. No pitch until you see the plan.</p>
+        <a class="btn" id="ctaBtn" href="#" target="_blank" rel="noopener">Book Your Free Strategy Call →</a>
+      </div>
+
+      <div class="footer-note">
+        Scorecard by Pitchpath — done-for-you quiz funnels that convert at 15-30%+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lead Capture Modal -->
+<div class="modal-overlay" id="leadModal">
+  <div class="modal">
+    <div class="modal-eyebrow">One last step</div>
+    <h2>Enter your details to get your personalized results.</h2>
+    <p>We'll send your full scorecard breakdown to your inbox so you can refer back to it anytime.</p>
+
+    <div class="field" id="fieldName">
+      <label for="leadName">First Name</label>
+      <input type="text" id="leadName" placeholder="Jane" autocomplete="given-name" />
+      <div class="field-error">Please enter your first name.</div>
+    </div>
+    <div class="field" id="fieldEmail">
+      <label for="leadEmail">Email Address</label>
+      <input type="email" id="leadEmail" placeholder="jane@yourcompany.com" autocomplete="email" />
+      <div class="field-error">Please enter a valid email.</div>
+    </div>
+    <div class="field" id="fieldPhone">
+      <label for="leadPhone">Phone Number</label>
+      <input type="tel" id="leadPhone" placeholder="(555) 123-4567" autocomplete="tel" />
+      <div class="field-error">Please enter your phone number.</div>
+    </div>
+
+    <button class="btn" onclick="submitLead()">Show My Results →</button>
+    <p class="modal-tiny">Your information is private. We do not share or sell your data. By submitting, you agree to receive your scorecard and follow-up emails. Unsubscribe anytime.</p>
+  </div>
+</div>
+
+<script>
+// ============================================
+// CONFIG
+// ============================================
+const BOOKING_LINK = "https://calendly.com/pitchpath/strategy-call"; // <-- Replace with real booking URL
+
+// ============================================
+// QUIZ DATA
+// ============================================
+const questions = [
+  {
+    id: 'segment',
+    title: 'What type of business do you run?',
+    help: 'This shapes your personalized blueprint.',
+    type: 'segment',
+    options: [
+      { label: 'Online course, membership, or digital product', val: 'creator' },
+      { label: 'E-commerce or DTC brand', val: 'ecom' },
+      { label: 'Local service business (medspa, dental, salon, home services)', val: 'local' },
+      { label: 'Coaching or consulting (1:1 or group)', val: 'coach' },
+      { label: 'Agency or B2B services', val: 'agency' }
+    ]
+  },
+  {
+    id: 'traffic',
+    title: 'How much traffic are you driving to your website per month?',
+    type: 'slider',
+    sliderLabel: 'Visitors per month',
+    sliderOptions: [
+      { display: 'Under 500', val: 250, points: 1 },
+      { display: '500 – 2,000', val: 1250, points: 2 },
+      { display: '2,000 – 10,000', val: 6000, points: 4 },
+      { display: '10,000 – 50,000', val: 30000, points: 5 },
+      { display: '50,000+', val: 75000, points: 5 }
+    ]
+  },
+  {
+    id: 'rate',
+    title: 'What percentage of your visitors become leads?',
+    help: 'Email opt-ins, calls booked, anything that captures contact info.',
+    options: [
+      { label: 'Under 1%', points: 5, val: 0.5 },
+      { label: '1 – 3%', points: 4, val: 2 },
+      { label: '3 – 7%', points: 3, val: 5 },
+      { label: '7 – 15%', points: 2, val: 10 },
+      { label: 'Over 15% (or I don\'t know)', points: 1, val: 1 }
+    ]
+  },
+  {
+    id: 'capture',
+    title: 'How are you currently capturing leads?',
+    options: [
+      { label: 'I don\'t have a lead capture system', points: 5 },
+      { label: 'Basic opt-in form (name + email)', points: 4 },
+      { label: 'Pop-up or exit-intent form', points: 3 },
+      { label: 'Landing page with a PDF / lead magnet', points: 3 },
+      { label: 'Already using a quiz or assessment', points: 1 }
+    ]
+  },
+  {
+    id: 'offers',
+    title: 'How many products, services, or offers do you sell?',
+    options: [
+      { label: 'One core offer', points: 2 },
+      { label: '2 – 3 offers at different price points', points: 4 },
+      { label: '4 – 6 products or service tiers', points: 5 },
+      { label: '10+ products or a full catalog', points: 5 },
+      { label: 'Custom / bespoke (every client is different)', points: 4 }
+    ]
+  },
+  {
+    id: 'email',
+    title: 'How do you follow up with leads after they opt in?',
+    options: [
+      { label: 'I don\'t send emails', points: 5 },
+      { label: 'Same welcome email to everyone', points: 4 },
+      { label: 'A generic nurture sequence (same for all)', points: 3 },
+      { label: 'Segmented sequences based on tags / behavior', points: 2 },
+      { label: 'Fully personalized sequences with dynamic content', points: 1 }
+    ]
+  },
+  {
+    id: 'frustration',
+    title: 'What is your biggest marketing frustration right now?',
+    options: [
+      { label: 'Not enough leads coming in', points: 4, tag: 'leads' },
+      { label: 'Leads come in but they don\'t buy', points: 5, tag: 'conversion' },
+      { label: 'Can\'t tell what is working and what isn\'t', points: 3, tag: 'attribution' },
+      { label: 'Don\'t have time to build marketing systems', points: 5, tag: 'time' },
+      { label: 'Too many tools, nothing connects', points: 4, tag: 'tools' }
+    ]
+  },
+  {
+    id: 'spend',
+    title: 'How much are you spending on paid ads per month?',
+    options: [
+      { label: 'Nothing — organic only', points: 2 },
+      { label: 'Under $1,000 / month', points: 3 },
+      { label: '$1,000 – $5,000 / month', points: 4 },
+      { label: '$5,000 – $20,000 / month', points: 5 },
+      { label: '$20,000+ / month', points: 5 }
+    ]
+  },
+  {
+    id: 'ltv',
+    title: 'What is your average customer worth over their lifetime?',
+    options: [
+      { label: 'Under $50', points: 1, val: 50 },
+      { label: '$50 – $250', points: 2, val: 150 },
+      { label: '$250 – $1,000', points: 3, val: 600 },
+      { label: '$1,000 – $5,000', points: 5, val: 3000 },
+      { label: '$5,000+', points: 5, val: 7500 }
+    ]
+  },
+  {
+    id: 'diy',
+    title: 'Have you ever tried building a quiz or interactive funnel yourself?',
+    options: [
+      { label: 'Never considered it', points: 3 },
+      { label: 'Thought about it but never started', points: 4 },
+      { label: 'Started building one but never finished', points: 5 },
+      { label: 'Built one but it didn\'t convert well', points: 5 },
+      { label: 'Have a working quiz that performs well', points: 1 }
+    ]
+  },
+  {
+    id: 'timeline',
+    title: 'How soon do you need a better conversion system working?',
+    options: [
+      { label: 'Yesterday — we are bleeding money', points: 5 },
+      { label: 'This month — we have a launch or campaign coming', points: 4 },
+      { label: 'This quarter — building for the next phase', points: 3 },
+      { label: 'Just exploring — no rush', points: 2 },
+      { label: 'I\'m researching for a client or team', points: 2 }
+    ]
+  }
+];
+
+// Result profiles
+const profiles = {
+  goldmine: {
+    range: [40, 50],
+    tier: 'Conversion Goldmine',
+    headline: 'You are sitting on a conversion goldmine.',
+    body: function(d) {
+      const traffic = d.traffic || 5000;
+      const rate = d.rate || 2;
+      const ltv = d.ltv || 600;
+      const currentLeads = Math.round(traffic * (rate / 100));
+      const projectedLeads = Math.round(traffic * 0.22);
+      const extraRevenue = Math.round((projectedLeads - currentLeads) * (ltv * 0.05));
+      return `<p>Your scorecard says what we suspected: you have traffic, you have offers, and you are converting a fraction of what you should be.</p>
+        <p>Here is the math. With roughly <strong>${traffic.toLocaleString()} visitors/month</strong> converting at <strong>${rate}%</strong>, you are generating around <strong>${currentLeads} leads/month</strong>. A quiz funnel built by conversion specialists typically converts at 15-30%. That same traffic could produce <strong style="color:var(--green)">${projectedLeads} leads/month</strong>.</p>
+        <p>You are not missing a tool. You are missing a system.</p>`;
+    },
+    builds: [
+      'A custom quiz funnel designed for your specific business model',
+      'Branching logic that segments visitors by intent, need, and readiness',
+      'Complete email follow-up sequences tailored to each quiz result',
+      'The quiz, the funnel, the emails — one integrated system, built in 10 business days'
+    ],
+    cta: { headline: 'You qualify for our priority build queue.', sub: 'Book a free strategy call. We will walk you through a quiz funnel we built for a business like yours — and show you exactly what yours would look like.', text: 'Book Your Free Strategy Call →' }
+  },
+  ready: {
+    range: [30, 39],
+    tier: 'Ready Launcher',
+    headline: 'You have the foundations. Now you need the conversion engine.',
+    body: function(d) {
+      return `<p>You are not starting from zero. You have traffic, you have an audience, and you have offers that sell. What you are missing is the system that turns casual visitors into qualified, segmented leads who are pre-sold before they ever see your pitch.</p>
+        <p>That is what a quiz funnel does. And you are in the sweet spot for it.</p>
+        <p>Your current setup is doing the basics — but "the basics" means everyone who hits your site gets the same experience. A quiz funnel gives every visitor a personalized path.</p>`;
+    },
+    builds: [
+      'A custom quiz tailored to your audience and offers',
+      'Segmentation logic that routes each visitor to the right follow-up',
+      'A complete email sequence for each quiz result path',
+      'Everything built, tested, and launched in 10 business days'
+    ],
+    cta: { headline: 'See what yours would look like.', sub: 'Book a free strategy call and we will show you a quiz funnel we built for someone in your space.', text: 'Book Your Free Strategy Call →' }
+  },
+  segmentation: {
+    range: [22, 29],
+    tier: 'Segmentation Opportunity',
+    headline: 'Your one-size-fits-all approach is costing you sales.',
+    body: function(d) {
+      return `<p>Here is the pattern your scorecard revealed: you have multiple offers but one funnel. Everyone who visits your site gets the same pitch, the same emails, the same experience — regardless of what they actually need.</p>
+        <p>That is the segmentation gap. And a quiz funnel closes it.</p>
+        <p>Instead of guessing which offer to push, a quiz asks visitors 5-10 questions that reveal what they need, what they have tried, and what they are ready for. Then it routes each person to the right offer with the right messaging. One funnel, infinite paths.</p>`;
+    },
+    builds: [
+      'A diagnostic quiz that segments visitors by need and readiness',
+      'Custom result pages with personalized recommendations',
+      'Segmented email sequences — each result path gets its own follow-up',
+      'Everything integrated — quiz to emails to offers, one system'
+    ],
+    cta: { headline: 'See how segmentation works in practice.', sub: 'Book a free strategy call and we will map out your quiz funnel — which questions, which paths, which emails.', text: 'Book Your Free Strategy Call →' }
+  },
+  foundation: {
+    range: [15, 21],
+    tier: 'Foundation Builder',
+    headline: 'Your quiz funnel is in your 90-day plan.',
+    body: function(d) {
+      return `<p>Your scorecard shows you are earlier in the journey — and that is fine. A quiz funnel works best when you have traffic to drive through it and offers to route people toward. You may need to build one or both of those foundations first.</p>
+        <p>But here is the thing: a quiz funnel is not just a conversion tool. For earlier-stage businesses, it is also a research tool. The answers your visitors give you reveal what they want, what they are struggling with, and what they would pay for.</p>
+        <p><strong>Your 90-day roadmap:</strong> Month 1 — clarify your core offer and start driving traffic. Month 2 — build your lead capture system. Month 3 — launch your quiz funnel.</p>`;
+    },
+    builds: [
+      'Start thinking about the 3-5 questions you would ask every prospect',
+      'Get your traffic to at least 1,000 visitors/month',
+      'When you are ready, Pitchpath builds the quiz funnel in 10 business days',
+      'Use the follow-up emails for foundational marketing tactics'
+    ],
+    cta: { headline: 'Not ready to build yet? That\'s fair.', sub: 'Book a free strategy call when the foundations are in place — or hop on a quick call now if you want a second opinion on what to build first. No pitch.', text: 'Book a Free Strategy Call →' }
+  },
+  explorer: {
+    range: [10, 14],
+    tier: 'Early Explorer',
+    headline: 'You are researching — smart move.',
+    body: function(d) {
+      return `<p>Your scorecard says you are early. Maybe you are just exploring what a quiz funnel is. Maybe you are researching for a client. Maybe you are not sure this applies to your business yet.</p>
+        <p>Here is the quick version: a quiz funnel replaces static opt-in forms with an interactive experience that segments visitors and routes them to personalized follow-up. Businesses that use them see 5-10x higher opt-in rates because people would rather answer questions about themselves than download another PDF.</p>
+        <p>If that clicks for you, the follow-up emails break down real examples from different industries — you'll see exactly what a quiz funnel looks like for a business like yours.</p>`;
+    },
+    builds: [
+      'Watch for our follow-up emails with real quiz funnel teardowns',
+      'Each email shows a different industry example (creator, ecom, local, agency)',
+      'When you\'re ready to build, Pitchpath turns it around in 10 business days',
+      'Reply to any email with a question — you\'ll get a real answer'
+    ],
+    cta: { headline: 'Want a quick second opinion?', sub: 'If you have a specific situation you\'d like to talk through, book a free strategy call. No pitch — just a real conversation about whether a quiz funnel makes sense for you.', text: 'Book a Free Strategy Call →' }
+  }
+};
+
+// Segment-specific blueprints
+const blueprints = {
+  creator: {
+    title: '"Which [program] is right for you?"',
+    body: '8-10 questions about skill level, goals, budget, and learning style. 3-4 paths: Beginner → Starter course, Intermediate → Main course, Advanced → Premium/coaching. Follow-up emails reference quiz answers directly: "You said your biggest challenge is X. Here is how [program] addresses that."'
+  },
+  ecom: {
+    title: '"Find your perfect [product]"',
+    body: '7-9 questions about preferences, needs, lifestyle, and budget. 4-6 result paths each recommending a specific product or bundle, with reviews from similar customers and a direct add-to-cart CTA. Follow-up emails handle abandoned-quiz recovery, product education, and quiz-data-driven cross-sell.'
+  },
+  local: {
+    title: '"What [treatment / service] is right for you?"',
+    body: '8-10 questions about concerns, budget, timeline, and previous treatments. 3-5 result paths each recommending a service category with pricing range. Result page includes before/after examples for their specific concern. Follow-up: personalized service guide and intro-offer for their recommended treatment.'
+  },
+  coach: {
+    title: '"What is your [business / life / health] score?"',
+    body: '10-12 questions assessing the client\'s current situation across multiple dimensions. 4-5 profiles each mapped to a coaching tier. Result page shows their score with specific strengths and gaps — the "I need help" moment that books discovery calls. Follow-up: detailed breakdown, case study, booking CTA.'
+  },
+  agency: {
+    title: '"How does your [marketing / ops / tech stack] score?"',
+    body: '10-15 questions assessing setup, team size, budget, and goals. 3-4 result tiers — DIY guidance for low-score, managed-service pitch for high-score. Result page includes a mini-audit with specific findings. Follow-up: detailed report, industry case study, proposal request CTA.'
+  }
+};
+
+// ============================================
+// STATE
+// ============================================
+let currentQ = 0;
+let answers = {};
+let data = {}; // computed values for personalization
+let history = []; // navigation history
+let pendingResultProfile = null;
+
+// ============================================
+// FLOW
+// ============================================
+function startQuiz() {
+  document.getElementById('screenIntro').classList.remove('active');
+  document.getElementById('screenQuestion').classList.add('active');
+  document.getElementById('progressWrap').style.display = 'block';
+  currentQ = 0;
+  history = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('qNum').textContent = `Question ${currentQ + 1} / ${questions.length}`;
+  document.getElementById('qTitle').textContent = q.title;
+  const helpEl = document.getElementById('qHelp');
+  if (q.help) { helpEl.textContent = q.help; helpEl.style.display = 'block'; }
+  else { helpEl.style.display = 'none'; }
+
+  // progress
+  const pct = Math.round(((currentQ) / questions.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `Question ${currentQ + 1} of ${questions.length}`;
+  document.getElementById('progressPercent').textContent = pct + '%';
+
+  document.getElementById('backBtn').disabled = history.length === 0;
+
+  const optionsEl = document.getElementById('qOptions');
+  const sliderEl = document.getElementById('qSlider');
+
+  if (q.type === 'slider') {
+    optionsEl.style.display = 'none';
+    sliderEl.style.display = 'block';
+    const slider = document.getElementById('sliderInput');
+    slider.max = q.sliderOptions.length - 1;
+    const savedIdx = answers[q.id]?.idx ?? 2;
+    slider.value = savedIdx;
+    document.getElementById('sliderLabel').textContent = q.sliderLabel;
+    updateSliderDisplay();
+    slider.oninput = updateSliderDisplay;
+  } else {
+    sliderEl.style.display = 'none';
+    optionsEl.style.display = 'flex';
+    optionsEl.innerHTML = '';
+    const letters = ['A','B','C','D','E','F'];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.innerHTML = `<span class="option-key">${letters[i]}</span><span>${opt.label}</span>`;
+      btn.onclick = () => selectOption(i);
+      if (answers[q.id]?.idx === i) btn.classList.add('selected');
+      optionsEl.appendChild(btn);
+    });
+  }
+}
+
+function updateSliderDisplay() {
+  const q = questions[currentQ];
+  const slider = document.getElementById('sliderInput');
+  const idx = parseInt(slider.value);
+  const opt = q.sliderOptions[idx];
+  document.getElementById('sliderValue').textContent = opt.display;
+}
+
+function selectOption(idx) {
+  const q = questions[currentQ];
+  const opt = q.options[idx];
+
+  if (q.type === 'segment') {
+    answers[q.id] = { idx, val: opt.val };
+  } else {
+    answers[q.id] = { idx, points: opt.points, val: opt.val, tag: opt.tag };
+  }
+
+  // Visual feedback
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+
+  // Auto-advance
+  setTimeout(() => advance(), 280);
+}
+
+function advanceFromSlider() {
+  const q = questions[currentQ];
+  const slider = document.getElementById('sliderInput');
+  const idx = parseInt(slider.value);
+  const opt = q.sliderOptions[idx];
+  answers[q.id] = { idx, points: opt.points, val: opt.val };
+  advance();
+}
+
+function advance() {
+  history.push(currentQ);
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    finishQuiz();
+  }
+}
+
+function goBack() {
+  if (history.length === 0) return;
+  currentQ = history.pop();
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Slider needs explicit "next" — bind on slider screen
+document.addEventListener('DOMContentLoaded', () => {
+  // Add a "Next" button that appears in the slider context
+  const sliderWrap = document.getElementById('qSlider');
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn';
+  nextBtn.style.marginTop = '20px';
+  nextBtn.textContent = 'Next →';
+  nextBtn.onclick = advanceFromSlider;
+  sliderWrap.appendChild(nextBtn);
+
+  // URL parameter for results bypass (only if lead already submitted in this session)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('results') === 'true' && sessionStorage.getItem('pp_lead_submitted') === 'true') {
+    const stored = sessionStorage.getItem('pp_results');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      answers = parsed.answers;
+      data = parsed.data;
+      pendingResultProfile = parsed.profile;
+      showResults();
+    }
+  }
+});
+
+function finishQuiz() {
+  // Compute score and data
+  let score = 0;
+  for (const q of questions) {
+    if (q.id === 'segment') continue;
+    const a = answers[q.id];
+    if (a && a.points) score += a.points;
+  }
+
+  // Compute personalization data
+  data.traffic = answers.traffic?.val || 5000;
+  data.rate = answers.rate?.val || 2;
+  data.ltv = answers.ltv?.val || 600;
+  data.segment = answers.segment?.val || 'creator';
+  data.score = score;
+
+  // Determine profile
+  let profileKey = 'explorer';
+  for (const [key, p] of Object.entries(profiles)) {
+    if (score >= p.range[0] && score <= p.range[1]) {
+      profileKey = key;
+      break;
+    }
+  }
+  pendingResultProfile = profileKey;
+
+  // Store for results gate
+  sessionStorage.setItem('pp_results', JSON.stringify({ answers, data, profile: profileKey }));
+
+  // Show lead capture modal
+  document.getElementById('leadModal').classList.add('active');
+}
+
+// ============================================
+// LEAD CAPTURE
+// ============================================
+function submitLead() {
+  const name = document.getElementById('leadName').value.trim();
+  const email = document.getElementById('leadEmail').value.trim();
+  const phone = document.getElementById('leadPhone').value.trim();
+
+  let valid = true;
+  const fName = document.getElementById('fieldName');
+  const fEmail = document.getElementById('fieldEmail');
+  const fPhone = document.getElementById('fieldPhone');
+  fName.classList.remove('error');
+  fEmail.classList.remove('error');
+  fPhone.classList.remove('error');
+
+  if (!name) { fName.classList.add('error'); valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { fEmail.classList.add('error'); valid = false; }
+  if (!phone || phone.replace(/\D/g, '').length < 7) { fPhone.classList.add('error'); valid = false; }
+
+  if (!valid) return;
+
+  // Store lead (in production, POST to your ESP/CRM here)
+  const lead = { name, email, phone, score: data.score, profile: pendingResultProfile, segment: data.segment, answers };
+  sessionStorage.setItem('pp_lead', JSON.stringify(lead));
+  sessionStorage.setItem('pp_lead_submitted', 'true');
+
+  // Example: POST to webhook (uncomment & set URL to wire up)
+  // fetch('YOUR_WEBHOOK_URL', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(lead) });
+
+  // Update URL with results=true
+  const url = new URL(window.location.href);
+  url.searchParams.set('results', 'true');
+  window.history.replaceState({}, '', url);
+
+  // Close modal, show results
+  document.getElementById('leadModal').classList.remove('active');
+  showResults();
+}
+
+// ============================================
+// RESULTS
+// ============================================
+function showResults() {
+  document.getElementById('screenQuestion').classList.remove('active');
+  document.getElementById('screenIntro').classList.remove('active');
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('screenResults').classList.add('active');
+
+  const profile = profiles[pendingResultProfile];
+  const blueprint = blueprints[data.segment] || blueprints.creator;
+
+  document.getElementById('resultHeadline').textContent = profile.headline;
+  document.getElementById('resultScore').textContent = `${data.score} / 50`;
+  document.getElementById('resultTier').textContent = profile.tier;
+  document.getElementById('resultBody').innerHTML = profile.body(data);
+
+  document.getElementById('blueprintTitle').textContent = blueprint.title;
+  document.getElementById('blueprintBody').textContent = blueprint.body;
+
+  const buildsList = document.getElementById('buildsList');
+  buildsList.innerHTML = '';
+  profile.builds.forEach(b => {
+    const li = document.createElement('li');
+    li.textContent = b;
+    buildsList.appendChild(li);
+  });
+
+  document.getElementById('ctaHeadline').textContent = profile.cta.headline;
+  document.getElementById('ctaSubhead').textContent = profile.cta.sub;
+  const ctaBtn = document.getElementById('ctaBtn');
+  ctaBtn.textContent = profile.cta.text;
+  ctaBtn.href = BOOKING_LINK;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
