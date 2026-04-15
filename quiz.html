@@ -679,37 +679,33 @@
   </div>
 </div>
 
-<!-- Lead Capture Modal (GoHighLevel embedded form) -->
+<!-- Lead Capture Modal -->
 <div class="modal-overlay" id="leadModal">
-  <div class="modal modal-form">
+  <div class="modal">
     <div class="modal-eyebrow">One last step</div>
     <h2>Enter your details to get your personalized results.</h2>
     <p>We'll send your full scorecard breakdown to your inbox so you can refer back to it anytime.</p>
 
-    <div class="form-frame-wrap">
-      <iframe
-        src="https://api.leadconnectorhq.com/widget/form/UiikpoBUdNXzVh7zIx0V"
-        style="width:100%;height:100%;border:none;border-radius:4px"
-        id="inline-UiikpoBUdNXzVh7zIx0V"
-        data-layout="{'id':'INLINE'}"
-        data-trigger-type="alwaysShow"
-        data-trigger-value=""
-        data-activation-type="alwaysActivated"
-        data-activation-value=""
-        data-deactivation-type="neverDeactivate"
-        data-deactivation-value=""
-        data-form-name="Optin Interactive AI Funnel Template Form (TEMPLATE)"
-        data-height="462"
-        data-layout-iframe-id="inline-UiikpoBUdNXzVh7zIx0V"
-        data-form-id="UiikpoBUdNXzVh7zIx0V"
-        title="Optin Interactive AI Funnel Template Form (TEMPLATE)"
-      ></iframe>
+    <div class="field" id="fieldName">
+      <label for="leadName">First Name</label>
+      <input type="text" id="leadName" placeholder="Jane" autocomplete="given-name" />
+      <div class="field-error">Please enter your first name.</div>
+    </div>
+    <div class="field" id="fieldEmail">
+      <label for="leadEmail">Email Address</label>
+      <input type="email" id="leadEmail" placeholder="jane@yourcompany.com" autocomplete="email" />
+      <div class="field-error">Please enter a valid email.</div>
+    </div>
+    <div class="field" id="fieldPhone">
+      <label for="leadPhone">Phone Number</label>
+      <input type="tel" id="leadPhone" placeholder="(555) 123-4567" autocomplete="tel" />
+      <div class="field-error">Please enter your phone number.</div>
     </div>
 
+    <button class="btn" id="leadSubmitBtn" onclick="submitLead()">Show My Results →</button>
     <p class="modal-tiny">Your information is private. We do not share or sell your data. By submitting, you agree to receive your scorecard and follow-up emails. Unsubscribe anytime.</p>
   </div>
 </div>
-<!-- form_embed.js is loaded dynamically when the modal opens (see finishQuiz) -->
 
 <script>
 // ============================================
@@ -1148,82 +1144,80 @@ function finishQuiz() {
     answers, data, profile: profileKey, ts: Date.now()
   }));
 
-  // Build the GHL iframe with quiz data injected as URL params.
-  // GHL captures these as hidden fields when matching custom fields are added
-  // to the form layout: pp_score, pp_profile, pp_profile_tier, pp_segment,
-  // pp_traffic, pp_rate, pp_ltv, pp_frustration
-  const formWrap = document.querySelector('.form-frame-wrap');
-  if (formWrap) {
-    const baseSrc = 'https://api.leadconnectorhq.com/widget/form/UiikpoBUdNXzVh7zIx0V';
-    const qp = new URLSearchParams({
-      pp_score: data.score,
-      pp_profile: profileKey,
-      pp_profile_tier: profiles[profileKey].tier,
-      pp_segment: data.segment,
-      pp_traffic: data.traffic,
-      pp_rate: data.rate,
-      pp_ltv: data.ltv,
-      pp_frustration: answers.frustration?.tag || ''
-    });
-    const fullSrc = baseSrc + '?' + qp.toString();
-
-    // Rebuild the iframe via innerHTML so the URL params are present in the
-    // initial HTML parse — this prevents GHL's form_embed.js from loading the
-    // form before params are attached, which strips them from the request.
-    formWrap.innerHTML = `<iframe
-      src="${fullSrc}"
-      style="width:100%;height:100%;border:none;border-radius:4px"
-      id="inline-UiikpoBUdNXzVh7zIx0V"
-      data-layout="{'id':'INLINE'}"
-      data-trigger-type="alwaysShow"
-      data-trigger-value=""
-      data-activation-type="alwaysActivated"
-      data-activation-value=""
-      data-deactivation-type="neverDeactivate"
-      data-deactivation-value=""
-      data-form-name="Optin Interactive AI Funnel Template Form (TEMPLATE)"
-      data-height="462"
-      data-layout-iframe-id="inline-UiikpoBUdNXzVh7zIx0V"
-      data-form-id="UiikpoBUdNXzVh7zIx0V"
-      title="Optin Interactive AI Funnel Template Form (TEMPLATE)"
-    ></iframe>`;
-  }
-
-  // Show modal FIRST so the iframe has real dimensions before GHL's script scans it
+  // Show lead capture modal
   document.getElementById('leadModal').classList.add('active');
-
-  // Load (or reload) GHL's form_embed.js after the modal is visible.
-  // The script must run when the iframe is already rendered with non-zero size,
-  // otherwise the embedded form fails to initialize and shows blank.
-  setTimeout(() => {
-    // Remove any previous instance of the script
-    const existing = document.querySelector('script[src*="msgsndr.com/js/form_embed.js"]');
-    if (existing) existing.remove();
-    const s = document.createElement('script');
-    s.src = 'https://link.msgsndr.com/js/form_embed.js';
-    s.async = true;
-    document.body.appendChild(s);
-  }, 50);
 }
 
 // ============================================
-// LEAD CAPTURE
+// LEAD CAPTURE — POSTs directly to GoHighLevel webhook
 // ============================================
-// Lead capture is now handled by the embedded GoHighLevel form.
-// On submission, GHL redirects the parent page to:
-//   https://yourquizdomain.com/quiz.html?results=true
-// The DOMContentLoaded handler above detects ?results=true and restores
-// quiz state from localStorage to display the personalized results.
-//
-// SETUP REQUIRED in GoHighLevel:
-//   1. Form Settings → On Submit → Redirect to URL → set the redirect URL
-//      to your quiz page with ?results=true appended.
-//      Example: https://getpitchpath.com/scorecard?results=true
-//   2. (Optional but recommended) Create custom fields on the form to capture
-//      quiz data passed via URL params: pp_score, pp_profile, pp_profile_tier,
-//      pp_segment, pp_traffic, pp_rate, pp_ltv, pp_frustration.
-//      GHL will auto-populate these from the iframe URL when finishQuiz()
-//      injects them.
+const GHL_WEBHOOK_URL = "https://services.leadconnectorhq.com/hooks/ZG7itbj1Vc5lOYd1gBFp/webhook-trigger/3916dcc8-27c2-4df6-8e70-f4b4bbd6ba8b";
+
+function submitLead() {
+  const name = document.getElementById('leadName').value.trim();
+  const email = document.getElementById('leadEmail').value.trim();
+  const phone = document.getElementById('leadPhone').value.trim();
+
+  let valid = true;
+  const fName = document.getElementById('fieldName');
+  const fEmail = document.getElementById('fieldEmail');
+  const fPhone = document.getElementById('fieldPhone');
+  fName.classList.remove('error');
+  fEmail.classList.remove('error');
+  fPhone.classList.remove('error');
+
+  if (!name) { fName.classList.add('error'); valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { fEmail.classList.add('error'); valid = false; }
+  if (!phone || phone.replace(/\D/g, '').length < 7) { fPhone.classList.add('error'); valid = false; }
+
+  if (!valid) return;
+
+  const btn = document.getElementById('leadSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  // Build clean JSON payload for GHL inbound webhook
+  const payload = {
+    first_name: name,
+    email: email,
+    phone: phone,
+    pp_score: data.score,
+    pp_profile: pendingResultProfile,
+    pp_profile_tier: profiles[pendingResultProfile].tier,
+    pp_segment: data.segment,
+    pp_traffic: data.traffic,
+    pp_rate: data.rate,
+    pp_ltv: data.ltv,
+    pp_frustration: answers.frustration?.tag || '',
+    source: 'quiz_scorecard',
+    submitted_at: new Date().toISOString()
+  };
+
+  // Store lead locally + show results regardless of webhook outcome
+  // (don't block the user experience on a network failure)
+  const showResultsAndProceed = () => {
+    sessionStorage.setItem('pp_lead_submitted', 'true');
+    const url = new URL(window.location.href);
+    url.searchParams.set('results', 'true');
+    window.history.replaceState({}, '', url);
+    document.getElementById('leadModal').classList.remove('active');
+    showResults();
+  };
+
+  fetch(GHL_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    mode: 'no-cors'  // GHL webhooks don't return CORS headers; we don't need the response
+  })
+  .then(() => {
+    showResultsAndProceed();
+  })
+  .catch((err) => {
+    console.warn('Webhook submission failed, showing results anyway:', err);
+    showResultsAndProceed();
+  });
+}
 
 // ============================================
 // RESULTS
