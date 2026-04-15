@@ -1149,10 +1149,11 @@ function finishQuiz() {
   }));
 
   // Build the GHL iframe with quiz data injected as URL params.
-  // GHL captures these as hidden fields if matching custom fields exist:
-  // pp_score, pp_profile, pp_profile_tier, pp_segment, pp_traffic, pp_rate, pp_ltv, pp_frustration
-  const oldIframe = document.getElementById('inline-UiikpoBUdNXzVh7zIx0V');
-  if (oldIframe) {
+  // GHL captures these as hidden fields when matching custom fields are added
+  // to the form layout: pp_score, pp_profile, pp_profile_tier, pp_segment,
+  // pp_traffic, pp_rate, pp_ltv, pp_frustration
+  const formWrap = document.querySelector('.form-frame-wrap');
+  if (formWrap) {
     const baseSrc = 'https://api.leadconnectorhq.com/widget/form/UiikpoBUdNXzVh7zIx0V';
     const qp = new URLSearchParams({
       pp_score: data.score,
@@ -1164,11 +1165,28 @@ function finishQuiz() {
       pp_ltv: data.ltv,
       pp_frustration: answers.frustration?.tag || ''
     });
-    // Recreate iframe so GHL's form_embed.js initializes it cleanly.
-    const parent = oldIframe.parentNode;
-    const newIframe = oldIframe.cloneNode(false);
-    newIframe.src = baseSrc + '?' + qp.toString();
-    parent.replaceChild(newIframe, oldIframe);
+    const fullSrc = baseSrc + '?' + qp.toString();
+
+    // Rebuild the iframe via innerHTML so the URL params are present in the
+    // initial HTML parse — this prevents GHL's form_embed.js from loading the
+    // form before params are attached, which strips them from the request.
+    formWrap.innerHTML = `<iframe
+      src="${fullSrc}"
+      style="width:100%;height:100%;border:none;border-radius:4px"
+      id="inline-UiikpoBUdNXzVh7zIx0V"
+      data-layout="{'id':'INLINE'}"
+      data-trigger-type="alwaysShow"
+      data-trigger-value=""
+      data-activation-type="alwaysActivated"
+      data-activation-value=""
+      data-deactivation-type="neverDeactivate"
+      data-deactivation-value=""
+      data-form-name="Optin Interactive AI Funnel Template Form (TEMPLATE)"
+      data-height="462"
+      data-layout-iframe-id="inline-UiikpoBUdNXzVh7zIx0V"
+      data-form-id="UiikpoBUdNXzVh7zIx0V"
+      title="Optin Interactive AI Funnel Template Form (TEMPLATE)"
+    ></iframe>`;
   }
 
   // Show modal FIRST so the iframe has real dimensions before GHL's script scans it
