@@ -1176,8 +1176,11 @@ function submitLead() {
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
-  // Build clean JSON payload for GHL inbound webhook
-  const payload = {
+  // Build payload for GHL inbound webhook.
+  // We send as application/x-www-form-urlencoded (not JSON) because that's a
+  // "simple" CORS request — no preflight, works in browsers without CORS headers
+  // on the receiving end. GHL webhooks accept either format.
+  const payloadObj = {
     first_name: name,
     email: email,
     phone: phone,
@@ -1192,6 +1195,7 @@ function submitLead() {
     source: 'quiz_scorecard',
     submitted_at: new Date().toISOString()
   };
+  const formBody = new URLSearchParams(payloadObj).toString();
 
   // Store lead locally + show results regardless of webhook outcome
   // (don't block the user experience on a network failure)
@@ -1206,9 +1210,8 @@ function submitLead() {
 
   fetch(GHL_WEBHOOK_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-    mode: 'no-cors'  // GHL webhooks don't return CORS headers; we don't need the response
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formBody
   })
   .then(() => {
     showResultsAndProceed();
